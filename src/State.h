@@ -11,10 +11,9 @@
 #include "CustomShader.h"
 
 // All hyprland includes are in this file so the private overwriting works correctly
-#define private public
+#define private   public
 #define protected public
 #include <hyprland/src/Compositor.hpp>
-#include <hyprland/src/config/legacy/ConfigManager.hpp>
 #include <hyprland/src/config/lua/bindings/LuaBindingsInternal.hpp>
 #include <hyprland/src/config/shared/actions/ConfigActions.hpp>
 #include <hyprland/src/config/shared/inotify/ConfigWatcher.hpp>
@@ -24,8 +23,8 @@
 #include <hyprland/src/desktop/state/ViewState.hpp>
 #include <hyprland/src/event/EventBus.hpp>
 #include <hyprland/src/helpers/time/Time.hpp>
-#include <hyprland/src/pointer/PointerManager.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
+#include <hyprland/src/pointer/PointerManager.hpp>
 #include <hyprland/src/render/Renderer.hpp>
 #include <hyprland/src/render/pass/Pass.hpp>
 #include <hyprland/src/render/pass/PassElement.hpp>
@@ -146,38 +145,19 @@ struct State
         }
     };
 
-    inline static const char* USER_SHADER_CATEGORY =
-        "plugin:darkwindow:shader";  // TODO: not currently used with the Lua config, clean up at some point
     inline static const char* LOAD_SHADERS_KEY = "plugin:darkwindow:load_shaders";
 
     void AddConfigValues()
     {
-        // legacy config is only supported for backwards compatibility, no new features will be added
-        if (auto legacy = Config::Legacy::mgr())
+        const auto registerLuaFn = [&](const std::string& name, lua_CFunction func)
         {
-            legacy->m_config->addSpecialCategory(
-                USER_SHADER_CATEGORY,
-                {
-                    .key = "id",
-                }
-            );
-            legacy->m_config->addSpecialConfigValue(USER_SHADER_CATEGORY, "from", "");
-            legacy->m_config->addSpecialConfigValue(USER_SHADER_CATEGORY, "path", "");
-            legacy->m_config->addSpecialConfigValue(USER_SHADER_CATEGORY, "args", "");
-            legacy->m_config->addSpecialConfigValue(USER_SHADER_CATEGORY, "introduces_transparency", Hyprlang::INT{ 0 });
-        }
-        else
-        {
-            const auto registerLuaFn = [&](const std::string& name, lua_CFunction func)
-            {
-                if (!HyprlandAPI::addLuaFunction(Handle, "darkwindow", name, func))
-                    throw Efmt("Failed to register Lua function hl.plugin.darwindow.{}", name);
-            };
-            registerLuaFn("load_shader", &LuaCallbacks::loadShader);
-            registerLuaFn("dsp_shade", &LuaCallbacks::shade);
-            registerLuaFn("build_rule_effect", &LuaCallbacks::buildRule);
-            registerLuaFn("build_window_rule", &LuaCallbacks::buildRule);
-        }
+            if (!HyprlandAPI::addLuaFunction(Handle, "darkwindow", name, func))
+                throw Efmt("Failed to register Lua function hl.plugin.darwindow.{}", name);
+        };
+        registerLuaFn("load_shader", &LuaCallbacks::loadShader);
+        registerLuaFn("dsp_shade", &LuaCallbacks::shade);
+        registerLuaFn("build_rule_effect", &LuaCallbacks::buildRule);
+        registerLuaFn("build_window_rule", &LuaCallbacks::buildRule);
 
         LoadShaders = SP(new Config::Values::CStringValue(
             LOAD_SHADERS_KEY, "comma separated list of shaders to load, can be empty or \"all\"", "all"
@@ -194,56 +174,8 @@ struct State
         return Hyprutils::String::CConstVarList(((Config::Values::CStringValue*) LoadShaders.get())->value());
     }
 
-    std::vector<UserShader> Config_UserShaders()
-    {
-        if (auto legacy = Config::Legacy::mgr())
-        {
-            std::vector<UserShader> shaders;
-
-            auto ids = legacy->m_config->listKeysForSpecialCategory(USER_SHADER_CATEGORY);
-            for (auto& id : std::set<std::string>(ids.begin(), ids.end()))
-            {
-                auto from = std::any_cast<Hyprlang::STRING>(
-                    legacy->m_config->getSpecialConfigValue(USER_SHADER_CATEGORY, "from", id.c_str())
-                );
-                auto path = std::any_cast<Hyprlang::STRING>(
-                    legacy->m_config->getSpecialConfigValue(USER_SHADER_CATEGORY, "path", id.c_str())
-                );
-                auto args = std::any_cast<Hyprlang::STRING>(
-                    legacy->m_config->getSpecialConfigValue(USER_SHADER_CATEGORY, "args", id.c_str())
-                );
-                auto transparent = std::any_cast<Hyprlang::INT>(
-                    legacy->m_config->getSpecialConfigValue(USER_SHADER_CATEGORY, "introduces_transparency", id.c_str())
-                );
-
-                shaders.push_back(
-                    UserShader{
-                        .Id = id,
-                        .From = from,
-                        .Path = path,
-                        .Args = args,
-                        .IntroducesTransparency = transparent > 0,
-                    }
-                );
-            }
-
-            return shaders;
-        }
-        else
-            return UserShaders;
-    }
-
     void RemoveConfigValues()
     {
-        if (auto legacy = Config::Legacy::mgr())
-        {
-            legacy->m_config->removeSpecialConfigValue(USER_SHADER_CATEGORY, "from");
-            legacy->m_config->removeSpecialConfigValue(USER_SHADER_CATEGORY, "path");
-            legacy->m_config->removeSpecialConfigValue(USER_SHADER_CATEGORY, "args");
-            legacy->m_config->removeSpecialConfigValue(USER_SHADER_CATEGORY, "introduces_transparency");
-            legacy->m_config->removeSpecialCategory(USER_SHADER_CATEGORY);
-        }
-
         Desktop::Rule::windowEffects()->unregisterEffect(WindowRuleShade);
         Desktop::Rule::layerEffects()->unregisterEffect(LayerRuleShade);
     }

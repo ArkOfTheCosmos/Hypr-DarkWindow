@@ -72,7 +72,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle)
                     }
                 }
 
-                for (auto& shader : g.Config_UserShaders())
+                for (auto& shader : g.UserShaders)
                 {
                     try
                     {
@@ -96,10 +96,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle)
                     }
                     catch (const std::exception& ex)
                     {
-                        g.NotifyError(
-                            std::string("Failed to load custom shader ") + g.USER_SHADER_CATEGORY + "[" + shader.Id +
-                            "]: " + ex.what()
-                        );
+                        g.NotifyError(std::string("Failed to load custom shader ") + "[" + shader.Id + "]: " + ex.what());
                     }
                 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <hyprland/src/helpers/time/Time.hpp>
 #include <hyprland/src/render/Shader.hpp>
 #include <map>

@@ -87,8 +87,8 @@ inline static const std::map<std::string, WindowShader> WINDOW_SHADERS = {
         }
     )glsl",
         {
-            { "scannerSpeed", { 1 } },
-            { "scannerSize", { 2 } },
+            { "speed", { 1 } },
+            { "size", { 2 } },
         },
         {} } },
     { "compilation_failed",

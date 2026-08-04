@@ -121,5 +121,5 @@ inline static const std::map<std::string, WindowShader> WINDOW_SHADERS = {
             { "scannerSpeed", { 1 } },
             { "scannerSize", { 2 } },
         },
-        {} } }
+        {} } },
 };

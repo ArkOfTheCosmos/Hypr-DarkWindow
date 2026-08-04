@@ -101,4 +101,25 @@ inline static const std::map<std::string, WindowShader> WINDOW_SHADERS = {
     )glsl",
         {},
         {} } },
+    { "scanner",
+      { R"glsl(
+        uniform float scannerSpeed;
+        uniform float scannerSize;
+
+        void windowShader(inout vec4 color) {
+            float dst = clamp(distance(vec2(0.5, 0.5), color.xy)*2.0, 0.0, 1.0);
+
+            dst = fract(sin(dot(vec2(1, ceil(x_PixelPos.y / scannerSize) + ceil(x_Time * 30.0 * scannerSpeed)),vec2(12.9898,78.233))) * 43758.5453);
+
+            if(dst > 0.85)
+            {
+               color = vec4(0.0,0.0,0.0,0.0);
+            }
+        }
+    )glsl",
+        {
+            { "scannerSpeed", { 1 } },
+            { "scannerSize", { 2 } },
+        },
+        {} } }
 };

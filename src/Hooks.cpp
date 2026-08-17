@@ -97,20 +97,20 @@ HOOK_FUNCTION(
     CHyprOpenGLImpl,
     getShaderVariant,
     WP<CShader>,
-    (Render::GL::CHyprOpenGLImpl * thisptr, Render::ePreparedFragmentShader frag, Render::ShaderFeatureFlags features)
+    (Render::GL::CHyprOpenGLImpl * thisptr, Render::ePreparedFragmentShader frag, Render::SShaderVariant variant)
 )
 {
     if (!g.RenderState.Active || frag != Render::SH_FRAG_SURFACE)
-        return original(thisptr, frag, features);
+        return original(thisptr, frag, variant);
 
     auto shaders = g.RenderState.ShaderConfig->ActiveShader;
     try
     {
         auto shader = shaders->Compiled->GetOrCreateVariant(
-            features,
+            variant,
             [&]
             {
-                std::string fragSrc = Render::g_pShaderLoader->getVariantSource(frag, features);
+                std::string fragSrc = Render::g_pShaderLoader->getVariantSource(frag, variant);
                 std::string modifiedFragSrc = shaders->Compiled->EditShader(fragSrc);
 
                 auto newShader = makeShared<CShader>();
@@ -125,6 +125,6 @@ HOOK_FUNCTION(
     catch (const std::exception& ex)
     {
         g.NotifyError(std::string("Failed to apply custom shader: ") + ex.what());
-        return original(thisptr, frag, features);
+        return original(thisptr, frag, variant);
     }
 }

@@ -3,6 +3,7 @@
 #include <functional>
 #include <hyprland/src/helpers/time/Time.hpp>
 #include <hyprland/src/render/Shader.hpp>
+#include <hyprland/src/render/ShaderLoader.hpp>
 #include <map>
 #include <string>
 
@@ -55,7 +56,7 @@ struct ShaderVariant
 struct CompiledShaders
 {
     std::string CustomSource;
-    std::map<uint8_t, ShaderVariant> FragVariants;
+    std::map<Render::SShaderVariant, ShaderVariant> FragVariants;
     bool FailedCompilation = false;
 
     bool UsesTimeUniform = false;
@@ -68,7 +69,7 @@ struct CompiledShaders
     std::string EditShader(const std::string& originalSource);
     void TestCompilation(const Uniforms& args);
 
-    ShaderVariant& GetOrCreateVariant(uint8_t features, std::function<SP<CShader>()> create);
+    ShaderVariant& GetOrCreateVariant(Render::SShaderVariant features, std::function<SP<CShader>()> create);
 };
 
 struct ShaderInstance

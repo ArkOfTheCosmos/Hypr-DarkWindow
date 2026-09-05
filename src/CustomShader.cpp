@@ -239,7 +239,7 @@ void main() {
     }
 }
 
-ShaderVariant& CompiledShaders::GetOrCreateVariant(uint8_t features, std::function<SP<CShader>()> create)
+ShaderVariant& CompiledShaders::GetOrCreateVariant(Render::SShaderVariant features, std::function<SP<CShader>()> create)
 {
     try
     {
